@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Lap Fortuna - Три рулетки Dota 2</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LAP <span>FORTUNA</span></h1>
+            <p class="subtitle">Три способа выбрать героя</p>
+        </header>
+
+        <!-- Переключатель режимов -->
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="wheel">
+                <span>🎡</span> Крутящееся колесо
+            </button>
+            <button class="mode-btn" data-mode="grid">
+                <span>🃏</span> Случайная карта
+            </button>
+            <button class="mode-btn" data-mode="hidden">
+                <span>🎭</span> Скрытое колесо
+            </button>
+        </div>
+
+        <!-- Режим 1: Крутящееся колесо -->
+        <div class="mode-content active" id="wheel-mode">
+            <div class="wheel-container">
+                <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                <button class="spin-btn" id="wheelSpinBtn">КРУТИТЬ</button>
+            </div>
+            <div class="result-area" id="wheelResult">
+                <div class="result-hero">
+                    <img id="wheelHeroImage" src="" alt="Герой">
+                    <h3 id="wheelHeroName">Ожидание...</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Режим 2: Квадратные фотки - случайная карта -->
+        <div class="mode-content" id="grid-mode">
+            <div class="grid-container" id="heroGrid">
+                <!-- Герои будут загружены сюда -->
+            </div>
+            <button class="spin-btn grid-spin-btn" id="gridSpinBtn">ВЫБРАТЬ СЛУЧАЙНОГО</button>
+            <div class="result-area" id="gridResult" style="display: none;">
+                <div class="result-hero">
+                    <img id="gridHeroImage" src="" alt="Герой">
+                    <h3 id="gridHeroName"></h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Режим 3: Скрытое колесо -->
+        <div class="mode-content" id="hidden-mode">
+            <div class="hidden-wheel-container">
+                <div class="mystery-box" id="mysteryBox">
+                    <div class="question-mark">?</div>
+                    <div class="mystery-glow"></div>
+                </div>
+                <button class="spin-btn" id="hiddenSpinBtn">ОТКРЫТЬ СУДЬБУ</button>
+            </div>
+            <div class="result-area hidden-result" id="hiddenResult" style="display: none;">
+                <div class="result-hero reveal-animation">
+                    <img id="hiddenHeroImage" src="" alt="Герой">
+                    <h3 id="hiddenHeroName"></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="heroes.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
