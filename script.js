@@ -1,8 +1,10 @@
-// script.js - Lap Fortuna с системой ID пользователей
+// script.js - Lap Fortuna с исправлениями
 
 let heroesList = [];
 let currentUserName = null;
+let currentUserData = null; // Храним ID и имя пользователя
 let currentMode = 'wheel';
+let lastUpdateTime = 0;
 
 // Загрузка героев
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedName) {
         currentUserName = savedName;
         document.getElementById('userNameDisplay').textContent = currentUserName;
+        // Загружаем данные пользователя и историю
+        loadUserData();
         loadLastRecords();
     } else {
         showNameModal();
@@ -29,7 +33,45 @@ document.addEventListener('DOMContentLoaded', () => {
     initHiddenWheel();
     initModeSwitcher();
     initUserControls();
+    
+    // Автообновление истории каждые 5 секунд
+    setInterval(() => {
+        if (currentUserName) {
+            loadLastRecords();
+            loadUserData(); // Обновляем данные пользователя на случай смены имени админом
+        }
+    }, 5000);
 });
+
+// Загрузить данные пользователя (ID и актуальное имя)
+async function loadUserData() {
+    if (!currentUserName) return;
+    
+    try {
+        const response = await fetch(GOOGLE_SHEETS_API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'getUserByName',
+                userName: currentUserName
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+            currentUserData = data.user;
+            // Если имя в таблице отличается от сохраненного, обновляем
+            if (currentUserData.name !== currentUserName) {
+                currentUserName = currentUserData.name;
+                localStorage.setItem('lapFortunaUserName', currentUserName);
+                document.getElementById('userNameDisplay').textContent = currentUserName;
+                console.log(`Имя обновлено: ${currentUserData.name}`);
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки данных пользователя:', error);
+    }
+}
 
 // Показать модальное окно для ввода имени
 function showNameModal() {
@@ -57,6 +99,7 @@ function showNameModal() {
             localStorage.setItem('lapFortunaUserName', currentUserName);
             document.getElementById('userNameDisplay').textContent = currentUserName;
             modal.classList.remove('active');
+            loadUserData();
             loadLastRecords();
         } else {
             alert('Пожалуйста, введите корректное имя (от 1 до 30 символов)');
@@ -95,6 +138,20 @@ function updateHistoryList(records) {
     }
     
     historyList.innerHTML = records.map(record => {
+        // Форматируем дату из ISO в читаемый вид
+        let formattedDate = record.date;
+        if (record.date && record.date.includes('T')) {
+            const date = new Date(record.date);
+            formattedDate = date.toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+        
         const heroName = record.hero.split('/').pop().split('.')[0].replace(/_/g, ' ').toUpperCase();
         return `
             <div class="history-item">
@@ -103,7 +160,7 @@ function updateHistoryList(records) {
                     <img src="${record.hero}" alt="${heroName}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23ffd700\' stroke-width=\'2\'%3E%3Cpath d=\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\'%3E%3C/path%3E%3Ccircle cx=\'12\' cy=\'7\' r=\'4\'%3E%3C/circle%3E%3C/svg%3E'">
                     <span>${heroName}</span>
                 </div>
-                <div class="history-time">${record.date}</div>
+                <div class="history-time">${formattedDate}</div>
             </div>
         `;
     }).join('');
@@ -128,7 +185,7 @@ async function addSpinRecord(hero, mode) {
         
         if (data.success) {
             console.log('Запись добавлена, userId:', data.userId);
-            loadLastRecords();
+            loadLastRecords(); // Обновляем историю сразу
         }
     } catch (error) {
         console.error('Ошибка добавления записи:', error);
@@ -413,7 +470,7 @@ function showWheelResult(heroName, heroImage) {
     }
 }
 
-// ==================== РЕЖИМ 2: СЛУЧАЙНАЯ КАРТА С АНИМАЦИЕЙ ====================
+// ==================== РЕЖИМ 2: СЛУЧАЙНАЯ КАРТА (ИСПРАВЛЕНО) ====================
 let isSelecting = false;
 
 function initGrid() {
@@ -480,9 +537,9 @@ function startGridSelectionAnimation() {
     const cards = document.querySelectorAll('.hero-card');
     
     let currentIndex = 0;
-    const totalSteps = cards.length;
     let step = 0;
-    const maxSteps = totalSteps + finalIndex; // Дойдем до финального индекса
+    // Проходим все карты и останавливаемся на финальной
+    const totalSteps = cards.length + finalIndex;
     
     const interval = setInterval(() => {
         // Убираем подсветку с предыдущей
@@ -496,13 +553,13 @@ function startGridSelectionAnimation() {
         
         step++;
         
-        // Двигаемся к финальному герою
-        if (step <= maxSteps) {
+        // Двигаемся к следующей карте
+        if (step < totalSteps) {
             currentIndex = (currentIndex + 1) % cards.length;
         }
         
-        // Когда дошли до финального, останавливаемся
-        if (step >= maxSteps) {
+        // Когда дошли до финального индекса, останавливаемся
+        if (step >= totalSteps) {
             clearInterval(interval);
             
             // Финальная подсветка
