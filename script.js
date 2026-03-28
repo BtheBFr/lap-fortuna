@@ -1,4 +1,4 @@
-// script.js - Lap Fortuna с Google Sheets интеграцией
+// script.js - Lap Fortuna с системой ID пользователей
 
 let heroesList = [];
 let currentUserName = null;
@@ -19,10 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedName) {
         currentUserName = savedName;
         document.getElementById('userNameDisplay').textContent = currentUserName;
-        // Загружаем историю
         loadLastRecords();
     } else {
-        // Показываем модальное окно для ввода имени
         showNameModal();
     }
     
@@ -41,8 +39,7 @@ function showNameModal() {
     document.getElementById('confirmNameBtn').onclick = () => {
         const userName = document.getElementById('userNameInput').value.trim();
         if (userName && userName.length > 0 && userName.length <= 30) {
-            // Проверка на маты (простые фильтры, можно расширить)
-            const badWords = ['бля', 'хуй', 'пизд', 'еба', 'залуп', 'мудак', 'говно'];
+            const badWords = ['бля', 'хуй', 'пизд', 'еба', 'залуп', 'мудак', 'говно', 'пидор', 'гандон'];
             let hasBadWord = false;
             for (let word of badWords) {
                 if (userName.toLowerCase().includes(word)) {
@@ -67,7 +64,7 @@ function showNameModal() {
     };
 }
 
-// Загрузить последние записи из Google Sheets
+// Загрузить последние записи
 async function loadLastRecords() {
     try {
         const response = await fetch(GOOGLE_SHEETS_API_URL, {
@@ -97,19 +94,22 @@ function updateHistoryList(records) {
         return;
     }
     
-    historyList.innerHTML = records.map(record => `
-        <div class="history-item">
-            <div class="history-user">${escapeHtml(record.userName)}</div>
-            <div class="history-hero">
-                <img src="${record.hero}" alt="${record.hero.split('/').pop().split('.')[0]}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23ffd700\' stroke-width=\'2\'%3E%3Cpath d=\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\'%3E%3C/path%3E%3Ccircle cx=\'12\' cy=\'7\' r=\'4\'%3E%3C/circle%3E%3C/svg%3E'">
-                <span>${escapeHtml(record.hero.split('/').pop().split('.')[0].replace(/_/g, ' ').toUpperCase())}</span>
+    historyList.innerHTML = records.map(record => {
+        const heroName = record.hero.split('/').pop().split('.')[0].replace(/_/g, ' ').toUpperCase();
+        return `
+            <div class="history-item">
+                <div class="history-user">${escapeHtml(record.userName)}</div>
+                <div class="history-hero">
+                    <img src="${record.hero}" alt="${heroName}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23ffd700\' stroke-width=\'2\'%3E%3Cpath d=\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\'%3E%3C/path%3E%3Ccircle cx=\'12\' cy=\'7\' r=\'4\'%3E%3C/circle%3E%3C/svg%3E'">
+                    <span>${heroName}</span>
+                </div>
+                <div class="history-time">${record.date}</div>
             </div>
-            <div class="history-time">${record.date}</div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
-// Добавить запись в Google Sheets
+// Добавить запись
 async function addSpinRecord(hero, mode) {
     if (!currentUserName) return;
     
@@ -127,8 +127,7 @@ async function addSpinRecord(hero, mode) {
         const data = await response.json();
         
         if (data.success) {
-            console.log('Запись добавлена');
-            // Обновляем историю
+            console.log('Запись добавлена, userId:', data.userId);
             loadLastRecords();
         }
     } catch (error) {
@@ -140,8 +139,7 @@ async function addSpinRecord(hero, mode) {
 async function submitNameRequest(newName) {
     if (!currentUserName) return false;
     
-    // Проверка на маты
-    const badWords = ['бля', 'хуй', 'пизд', 'еба', 'залуп', 'мудак', 'говно'];
+    const badWords = ['бля', 'хуй', 'пизд', 'еба', 'залуп', 'мудак', 'говно', 'пидор', 'гандон'];
     for (let word of badWords) {
         if (newName.toLowerCase().includes(word)) {
             alert('Имя содержит недопустимые символы. Пожалуйста, выберите другое имя.');
@@ -233,7 +231,7 @@ function initModeSwitcher() {
     });
 }
 
-// ==================== РЕЖИМ 1: КРУТЯЩЕЕСЯ КОЛЕСО ====================
+// ==================== РЕЖИМ 1: КОЛЕСО ====================
 let wheelCanvas, ctx;
 let currentRotation = 0;
 let isSpinning = false;
@@ -415,7 +413,7 @@ function showWheelResult(heroName, heroImage) {
     }
 }
 
-// ==================== РЕЖИМ 2: КВАДРАТНЫЕ ФОТКИ ====================
+// ==================== РЕЖИМ 2: СЛУЧАЙНАЯ КАРТА С АНИМАЦИЕЙ ====================
 let isSelecting = false;
 
 function initGrid() {
@@ -476,30 +474,40 @@ function startGridSelectionAnimation() {
     
     document.querySelectorAll('.hero-card').forEach(c => c.classList.remove('selected'));
     
-    let iterations = 0;
-    const maxIterations = 20;
-    let currentHighlightIndex = 0;
+    // Заранее выбираем финального героя
+    const finalIndex = Math.floor(Math.random() * heroesList.length);
+    const finalHero = heroesList[finalIndex];
+    const cards = document.querySelectorAll('.hero-card');
+    
+    let currentIndex = 0;
+    const totalSteps = cards.length;
+    let step = 0;
+    const maxSteps = totalSteps + finalIndex; // Дойдем до финального индекса
     
     const interval = setInterval(() => {
+        // Убираем подсветку с предыдущей
         document.querySelectorAll('.hero-card').forEach(c => c.classList.remove('highlight-animation'));
         
-        const cards = document.querySelectorAll('.hero-card');
-        if (cards.length > 0) {
-            cards[currentHighlightIndex].classList.add('highlight-animation');
-            cards[currentHighlightIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Подсвечиваем текущую
+        if (cards[currentIndex]) {
+            cards[currentIndex].classList.add('highlight-animation');
+            cards[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
         
-        currentHighlightIndex = (currentHighlightIndex + 1) % cards.length;
-        iterations++;
+        step++;
         
-        if (iterations >= maxIterations) {
+        // Двигаемся к финальному герою
+        if (step <= maxSteps) {
+            currentIndex = (currentIndex + 1) % cards.length;
+        }
+        
+        // Когда дошли до финального, останавливаемся
+        if (step >= maxSteps) {
             clearInterval(interval);
             
-            const finalIndex = Math.floor(Math.random() * heroesList.length);
-            const finalHero = heroesList[finalIndex];
-            const finalCard = document.querySelector(`.hero-card[data-index="${finalIndex}"]`);
-            
+            // Финальная подсветка
             document.querySelectorAll('.hero-card').forEach(c => c.classList.remove('highlight-animation'));
+            const finalCard = cards[finalIndex];
             if (finalCard) {
                 finalCard.classList.add('selected');
                 finalCard.classList.add('final-select');
@@ -520,7 +528,7 @@ function startGridSelectionAnimation() {
                 }, 1000);
             }, 300);
         }
-    }, 100);
+    }, 80);
 }
 
 function showGridResult(heroName, heroImage) {
@@ -708,12 +716,4 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
-}
-
-// Обновление при изменении списка героев
-function refreshAll() {
-    updateSegments();
-    drawWheel();
-    initGrid();
-    resetHiddenWheel();
 }
