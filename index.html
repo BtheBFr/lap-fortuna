@@ -27,66 +27,72 @@
             </button>
         </div>
 
-        <!-- Режим 1: Крутящееся колесо -->
-        <div class="mode-content active" id="wheel-mode">
-            <div class="wheel-container">
-                <canvas id="wheelCanvas" width="500" height="500"></canvas>
-                <button class="spin-btn" id="wheelSpinBtn">КРУТИТЬ</button>
-            </div>
-            <div class="result-area" id="wheelResult" style="display: none;">
-                <div class="result-hero">
-                    <img id="wheelHeroImage" src="" alt="Герой">
-                    <h3 id="wheelHeroName"></h3>
+        <div class="main-layout">
+            <!-- Левая часть - режимы -->
+            <div class="modes-area">
+                <!-- Режим 1: Крутящееся колесо -->
+                <div class="mode-content active" id="wheel-mode">
+                    <div class="wheel-container">
+                        <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                        <button class="spin-btn" id="wheelSpinBtn">КРУТИТЬ</button>
+                    </div>
+                    <div class="result-area" id="wheelResult" style="display: none;">
+                        <div class="result-hero">
+                            <img id="wheelHeroImage" src="" alt="Герой">
+                            <h3 id="wheelHeroName"></h3>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Режим 2: Квадратные фотки - случайная карта -->
-        <div class="mode-content" id="grid-mode">
-            <div class="grid-container" id="heroGrid">
-                <!-- Герои будут загружены сюда -->
-            </div>
-            <button class="spin-btn grid-spin-btn" id="gridSpinBtn">ВЫБРАТЬ СЛУЧАЙНОГО</button>
-            <div class="result-area" id="gridResult" style="display: none;">
-                <div class="result-hero">
-                    <img id="gridHeroImage" src="" alt="Герой">
-                    <h3 id="gridHeroName"></h3>
+                <!-- Режим 2: Квадратные фотки -->
+                <div class="mode-content" id="grid-mode">
+                    <div class="grid-container" id="heroGrid"></div>
+                    <button class="spin-btn grid-spin-btn" id="gridSpinBtn">ВЫБРАТЬ СЛУЧАЙНОГО</button>
+                    <div class="result-area" id="gridResult" style="display: none;">
+                        <div class="result-hero">
+                            <img id="gridHeroImage" src="" alt="Герой">
+                            <h3 id="gridHeroName"></h3>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Режим 3: Скрытое колесо -->
-        <div class="mode-content" id="hidden-mode">
-            <div class="hidden-wheel-container">
-                <div class="mystery-box" id="mysteryBox">
-                    <div class="question-mark">?</div>
-                    <div class="mystery-glow"></div>
+                <!-- Режим 3: Скрытое колесо -->
+                <div class="mode-content" id="hidden-mode">
+                    <div class="hidden-wheel-container">
+                        <div class="mystery-box" id="mysteryBox">
+                            <div class="question-mark">?</div>
+                            <div class="mystery-glow"></div>
+                        </div>
+                        <button class="spin-btn" id="hiddenSpinBtn">ОТКРЫТЬ СУДЬБУ</button>
+                    </div>
+                    <div class="result-area hidden-result" id="hiddenResult" style="display: none;">
+                        <div class="result-hero reveal-animation">
+                            <img id="hiddenHeroImage" src="" alt="Герой">
+                            <h3 id="hiddenHeroName"></h3>
+                        </div>
+                    </div>
                 </div>
-                <button class="spin-btn" id="hiddenSpinBtn">ОТКРЫТЬ СУДЬБУ</button>
             </div>
-            <div class="result-area hidden-result" id="hiddenResult" style="display: none;">
-                <div class="result-hero reveal-animation">
-                    <img id="hiddenHeroImage" src="" alt="Герой">
-                    <h3 id="hiddenHeroName"></h3>
-                </div>
-            </div>
-        </div>
 
-        <!-- Боковая панель с историей и именем -->
-        <div class="sidebar">
-            <div class="user-section">
-                <div class="user-name-display">
-                    <span class="user-label">Игрок:</span>
-                    <span class="user-name" id="userNameDisplay">Не указано</span>
+            <!-- Правая часть - профиль и история -->
+            <div class="sidebar">
+                <div class="user-section">
+                    <div class="user-avatar">🎮</div>
+                    <div class="user-name-display">
+                        <span class="user-label">Игрок</span>
+                        <span class="user-name" id="userNameDisplay">Не указано</span>
+                    </div>
+                    <button class="change-name-btn" id="changeNameBtn">
+                        <span>✏️</span> Хочу другое имя
+                    </button>
+                    <div class="name-request-status" id="nameRequestStatus" style="display: none;"></div>
                 </div>
-                <button class="change-name-btn" id="changeNameBtn">Хочу другое</button>
-                <div class="name-request-status" id="nameRequestStatus" style="display: none;"></div>
-            </div>
-            
-            <div class="history-section">
-                <h3>📜 Последние выпадения</h3>
-                <div class="history-list" id="historyList">
-                    <div class="history-empty">Пока ничего нет</div>
+                
+                <div class="history-section">
+                    <h3>📜 Последние выпадения</h3>
+                    <div class="history-list" id="historyList">
+                        <div class="history-empty">Пока ничего нет</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -95,27 +101,29 @@
     <!-- Модальное окно для ввода имени -->
     <div class="modal" id="nameModal">
         <div class="modal-content">
-            <h2>👋 Добро пожаловать!</h2>
-            <p>Введите ваше имя (изменить можно будет через заявку)</p>
-            <input type="text" id="userNameInput" placeholder="Ваше имя" maxlength="30">
+            <div class="modal-icon">🎲</div>
+            <h2>Добро пожаловать!</h2>
+            <p>Введите ваше имя, чтобы начать игру</p>
+            <input type="text" id="userNameInput" placeholder="Ваше имя" maxlength="30" autocomplete="off">
             <div class="modal-buttons">
                 <button class="modal-btn confirm" id="confirmNameBtn">Продолжить</button>
             </div>
-            <small>⚠️ Имя нельзя будет изменить самостоятельно, только через заявку администратору</small>
+            <small>⚠️ Имя можно будет изменить через заявку администратору</small>
         </div>
     </div>
 
     <!-- Модальное окно для смены имени -->
     <div class="modal" id="changeNameModal">
         <div class="modal-content">
-            <h2>🔄 Смена имени</h2>
+            <div class="modal-icon">🔄</div>
+            <h2>Смена имени</h2>
             <p>Введите новое имя</p>
-            <input type="text" id="newUserNameInput" placeholder="Новое имя" maxlength="30">
+            <input type="text" id="newUserNameInput" placeholder="Новое имя" maxlength="30" autocomplete="off">
             <div class="modal-buttons">
                 <button class="modal-btn cancel" id="cancelNameBtn">Отмена</button>
                 <button class="modal-btn confirm" id="submitNameRequestBtn">Отправить заявку</button>
             </div>
-            <small>📝 Заявка будет отправлена администратору. После одобрения имя изменится.</small>
+            <small>📝 Заявка будет отправлена администратору</small>
         </div>
     </div>
 
