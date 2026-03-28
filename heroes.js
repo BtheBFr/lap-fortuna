@@ -1,6 +1,4 @@
-// База данных героев Dota 2 - Lap Fortuna
-// Все герои с уникальными именами и путями к изображениям
-
+// heroes.js - Все герои Dota 2 (124 героя)
 const heroes = [
     { name: "Abaddon", image: "heroes/abaddon.png" },
     { name: "Alchemist", image: "heroes/alchemist.png" },
@@ -131,10 +129,4 @@ const heroes = [
     { name: "Zeus", image: "heroes/zeus.png" }
 ];
 
-// Подсчет количества героев
-console.log(`Lap Fortuna загружена! Всего героев: ${heroes.length}`);
-
-// Экспорт для использования в других файлах
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = heroes;
-}
+console.log(`Lap Fortuna: ${heroes.length} героев загружено`);
